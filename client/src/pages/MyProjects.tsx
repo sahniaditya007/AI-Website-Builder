@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import { Loader2Icon, PlusIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Loader2Icon, PlusIcon, TrashIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { Project } from '../types'
+import type { Project } from '../types'
 
 const MyProjects = () => {
   const [loading, setLoading] = useState(true)
@@ -9,11 +9,13 @@ const MyProjects = () => {
   const navigate = useNavigate()
 
   const fetchProjects = async () => {
-    // Simulate loading
     setTimeout(() => {
-      
       setLoading(false)
     }, 1000)
+  }
+
+  const deleteProject = async (projectId: string) => {
+    
   }
 
   useEffect(() => {
@@ -29,9 +31,7 @@ const MyProjects = () => {
       ) : projects.length > 0 ? (
         <div className="py-10 min-h-[80vh]">
           <div className="flex items-center justify-between mb-12">
-            <h1 className="text-2xl font-medium text-white">
-              My Projects
-            </h1>
+            <h1 className="text-2xl font-medium text-white">My Projects</h1>
 
             <button
               onClick={() => navigate('/')}
@@ -59,10 +59,14 @@ const MyProjects = () => {
                   {project.current_code ? (
                     <iframe
                       srcDoc={project.current_code}
-                      className='absolute top-0 left-0 w-[1200px] h-[800px]
-                      origin-top-left pointer-events-none'
-                      sandbox='allow-scripts allow-same-origin'
-                      style={{ transform: 'scale(0.25)'}}
+                      className="absolute top-0 left-0 pointer-events-none"
+                      sandbox="allow-scripts allow-same-origin"
+                      style={{
+                        width: 300,
+                        height: 200,
+                        transform: 'scale(0.25)',
+                        transformOrigin: 'top left',
+                      }}
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-500">
@@ -71,10 +75,58 @@ const MyProjects = () => {
                   )}
                 </div>
 
-                <div className="p-3">
-                  <h3 className="text-white text-sm font-medium truncate">
-                    {project.name}
-                  </h3>
+                {/* Content */}
+                <div className="p-4 text-white bg-linear-180 from-transparent group-hover:from-indigo-950 to-transparent transition-colors">
+                  <div className="flex items-start justify-between">
+                    <h2 className="text-lg font-medium line-clamp-2">
+                      {project.name}
+                    </h2>
+                    <button
+                      onClick={(e) => e.stopPropagation()}
+                      className="px-2.5 py-0.5 mt-1 ml-2 
+                      text-xs bg-gray-800 border border-gray-700
+                      rounded-full"
+                    >
+                      Website
+                    </button>
+                  </div>
+
+                  <p className="text-gray-400 mt-1 text-sm line-clamp-2">
+                    {project.initial_prompt}
+                  </p>
+
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex justify-between items-center mt-6"
+                  >
+                    <span className="text-xs text-gray-500">
+                      {new Date(project.createdAt).toLocaleDateString()}
+                    </span>
+
+                    <div className="flex gap-3 text-white text-sm">
+                      <button
+                        onClick={() => navigate(`/preview/${project.id}`)}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded-md transition-all"
+                      >
+                        Preview
+                      </button>
+                      <button
+                        onClick={() => navigate(`/preview/${project.id}`)}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded-md transition-colors"
+                      >
+                        Open
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div onClick={(e) => e.stopPropagation()}>
+                  <TrashIcon
+                    className="absolute top-3 right-3
+                    scale-0 group-hover:scale-100 bg-white p-1.5 size-7
+                    transition-all"
+                    onClick={() => deleteProject(project.id)}
+                  />
                 </div>
               </div>
             ))}
