@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Project } from '../types'
 import { Loader2Icon, PlusIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { Project } from '../types'
 
 const MyProjects = () => {
   const [loading, setLoading] = useState(true)
@@ -11,6 +11,7 @@ const MyProjects = () => {
   const fetchProjects = async () => {
     // Simulate loading
     setTimeout(() => {
+      
       setLoading(false)
     }, 1000)
   }
@@ -35,7 +36,7 @@ const MyProjects = () => {
             <button
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-white px-3 sm:px-6 py-1 sm:py-2 rounded
-              bg--to-br from-indigo-500 to-indigo-600
+              bg-linear-to-br from-indigo-500 to-indigo-600
               hover:opacity-90 active:scale-95 transition-all"
             >
               <PlusIcon size={18} />
@@ -43,6 +44,41 @@ const MyProjects = () => {
             </button>
           </div>
 
+          <div className="flex flex-wrap gap-3.5">
+            {projects.map((project) => (
+              <div
+                key={project.id}
+                className="relative group w-72 max-sm:w-full cursor-pointer bg-gray-900/60
+                border border-gray-700 rounded-lg overflow-hidden shadow-md
+                hover:shadow-indigo-700/30 hover:border-indigo-800/80
+                transition-all duration-300"
+                onClick={() => navigate(`/project/${project.id}`)}
+              >
+                {/* Mini Preview */}
+                <div className="relative w-full h-40 bg-gray-900 overflow-hidden border-b border-gray-800">
+                  {project.current_code ? (
+                    <iframe
+                      srcDoc={project.current_code}
+                      className='absolute top-0 left-0 w-[1200px] h-[800px]
+                      origin-top-left pointer-events-none'
+                      sandbox='allow-scripts allow-same-origin'
+                      style={{ transform: 'scale(0.25)'}}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      <p>No Preview</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-3">
+                  <h3 className="text-white text-sm font-medium truncate">
+                    {project.name}
+                  </h3>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center h-[80vh] gap-5">
