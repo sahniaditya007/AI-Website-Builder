@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Loader2Icon, PlusIcon, TrashIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { Project } from '../types'
+import { dummyProjects } from '../assets/assets'
 
 const MyProjects = () => {
   const [loading, setLoading] = useState(true)
@@ -9,9 +10,11 @@ const MyProjects = () => {
   const navigate = useNavigate()
 
   const fetchProjects = async () => {
+    setProjects(dummyProjects)
+    //Simulate Loading
     setTimeout(() => {
       setLoading(false)
-    }, 1000)
+    }, 1000);
   }
 
   const deleteProject = async (projectId: string) => {
@@ -59,13 +62,11 @@ const MyProjects = () => {
                   {project.current_code ? (
                     <iframe
                       srcDoc={project.current_code}
-                      className="absolute top-0 left-0 pointer-events-none"
+                      className="absolute top-0 left-0 w-[1200px]
+                      h-[800px] origin-top-left pointer-events-none"
                       sandbox="allow-scripts allow-same-origin"
                       style={{
-                        width: 300,
-                        height: 200,
                         transform: 'scale(0.25)',
-                        transformOrigin: 'top left',
                       }}
                     />
                   ) : (
