@@ -6,6 +6,7 @@ import MyProjects from './pages/MyProjects'
 import Preview from './pages/Preview'
 import Community from './pages/Community'
 import View from './pages/View'
+import AuthSignIn from './pages/AuthSignIn'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
 
@@ -22,6 +23,7 @@ const App = () => {
         <Route path='/preview/:projectId/:versionId' element={<Preview />} />
         <Route path='/community' element={<Community />} />
         <Route path='/view/:projectId' element={<View />} />
+        <Route path='/auth/signin' element={<AuthSignIn />} />
       </Routes>
       <Footer />
     </div>

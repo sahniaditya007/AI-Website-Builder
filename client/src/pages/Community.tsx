@@ -39,11 +39,10 @@ const Community = () => {
               <Link
                 key={project.id}
                 to={`/view/${project.id}`}
-                target='_blank'
+                target="_blank"
                 className="w-72 max-sm:mx-auto cursor-pointer bg-gray-900/60
                 border border-gray-700 rounded-lg overflow-hidden
-                group hover:border-indigo-800-80 tracking-all duration-300"
-                onClick={() => navigate(`/project/${project.id}`)}
+                group hover:border-indigo-800/80 transition-all duration-300"
               >
                 {/* Mini Preview */}
                 <div className="relative w-full h-40 bg-gray-900 overflow-hidden border-b border-gray-800">

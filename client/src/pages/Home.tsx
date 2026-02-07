@@ -1,19 +1,20 @@
 import { Loader2Icon } from 'lucide-react';
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const Home = () => {
-
+  const navigate = useNavigate()
   const [input, setInput] = useState('');
-  const[loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const onSubmitHandler = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    setLoading(true);
-    //Simulate API Call
+    setLoading(true)
+    // Simulate API call – replace with backend later
     setTimeout(() => {
       setLoading(false)
-    }, 3000)
+      navigate('/projects/new', { state: { prompt: input.trim() || 'My website' } })
+    }, 2000)
   }
 
   return (
@@ -38,13 +39,12 @@ const Home = () => {
 
         <form onSubmit={onSubmitHandler} className="bg-white/10 max-w-2xl w-full rounded-xl p-4 mt-10 border border-indigo-600/70 focus-within:ring-2 ring-indigo-500 transition-all">
           <textarea onChange={e => setInput(e.target.value)} className="bg-transparent outline-none text-gray-300 resize-none w-full" rows={4} placeholder="Describe your presentation in details" required />
-          <button className="ml-auto flex items-center gap-2 bg-linear-to-r from-[#CB52D4] to-indigo-600 rounded-md px-4 py-2">
-            {!loading ? 'Create with AI' : (
-              <>
-              Creating <Loader2Icon className='animate-spin size-4 text-white' />
-              </>
+          <button type="submit" className="ml-auto flex items-center gap-2 bg-linear-to-r from-[#CB52D4] to-indigo-600 rounded-md px-4 py-2 disabled:opacity-80">
+            {loading ? (
+              <>Creating <Loader2Icon className="animate-spin size-4 text-white" /></>
+            ) : (
+              'Create with AI'
             )}
-            Create with AI
           </button>
         </form>
         

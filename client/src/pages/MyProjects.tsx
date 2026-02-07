@@ -55,7 +55,7 @@ const MyProjects = () => {
                 border border-gray-700 rounded-lg overflow-hidden shadow-md
                 hover:shadow-indigo-700/30 hover:border-indigo-800/80
                 transition-all duration-300"
-                onClick={() => navigate(`/project/${project.id}`)}
+                onClick={() => navigate(`/projects/${project.id}`)}
               >
                 {/* Mini Preview */}
                 <div className="relative w-full h-40 bg-gray-900 overflow-hidden border-b border-gray-800">
@@ -112,7 +112,7 @@ const MyProjects = () => {
                         Preview
                       </button>
                       <button
-                        onClick={() => navigate(`/preview/${project.id}`)}
+                        onClick={() => navigate(`/projects/${project.id}`)}
                         className="px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded-md transition-colors"
                       >
                         Open
