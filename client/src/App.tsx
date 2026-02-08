@@ -9,11 +9,14 @@ import View from './pages/View'
 import AuthSignIn from './pages/AuthSignIn'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer'
+import { Toaster } from "@/components/ui/sonner"
+import AuthPage from './pages/auth/AuthPage'
 
 const App = () => {
   return (
     <div>
       <NavBar />
+      <Toaster />
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/pricing' element={<Pricing />} />
@@ -24,6 +27,7 @@ const App = () => {
         <Route path='/community' element={<Community />} />
         <Route path='/view/:projectId' element={<View />} />
         <Route path='/auth/signin' element={<AuthSignIn />} />
+        <Route path='/auth/:pathname' element={<AuthPage />} />
       </Routes>
       <Footer />
     </div>
