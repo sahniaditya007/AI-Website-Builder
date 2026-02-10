@@ -196,7 +196,7 @@ export const createUserProject = async(req: Request, res: Response) => {
 }
 
 // Controller Function to Get a Single User Project
-export const getUserCredits = async (req: Request, res: Response) => {
+export const getUserProject = async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
         if (!userId) {
@@ -306,3 +306,7 @@ export const togglePublish = async (req: Request, res: Response) => {
 };
 
 // Controller Function to Purchase Credits
+
+export const purchaseCredits = async (req: Request, res: Response) => {
+
+};
