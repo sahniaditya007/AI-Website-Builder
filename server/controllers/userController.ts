@@ -308,5 +308,53 @@ export const togglePublish = async (req: Request, res: Response) => {
 // Controller Function to Purchase Credits
 
 export const purchaseCredits = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
 
+        const { planId, credits, amount } = req.body as {
+            planId?: string;
+            credits?: number;
+            amount?: number;
+        };
+
+        if (!planId || !credits || !amount) {
+            return res.status(400).json({ message: 'Invalid purchase details' });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        await prisma.$transaction([
+            prisma.transaction.create({
+                data: {
+                    planId,
+                    amount,
+                    credits,
+                    userId,
+                    isPaid: true,
+                },
+            }),
+            prisma.user.update({
+                where: { id: userId },
+                data: {
+                    credits: {
+                        increment: credits,
+                    },
+                },
+            }),
+        ]);
+
+        return res.json({ message: 'Credits purchased successfully' });
+    } catch (error: any) {
+        console.log(error.code || error.message);
+        return res.status(500).json({ message: error.message });
+    }
 };

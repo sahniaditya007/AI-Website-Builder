@@ -1,23 +1,40 @@
-import React from 'react'
-import { assets } from '../assets/assets';
-import { Link, useNavigate } from 'react-router-dom';
-import Community from '../pages/Community';
-import { Session } from '../../../server/generated/prisma/client';
-import { authClient } from '../../lib/auth-client';
+import React, { useEffect, useState } from 'react'
+import { assets } from '../assets/assets'
+import { Link, useNavigate } from 'react-router-dom'
+import { authClient } from '@/lib/auth-client'
 import { UserButton } from '@daveyplate/better-auth-ui'
+import api from '@/config/axios'
+import { toast } from 'sonner'
 
 const NavBar = () => {
-    const [menuOpen, setMenuOpen] = React.useState(false);
-    const navigate = useNavigate()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const navigate = useNavigate()
+  const [credits, setCredits] = useState<number | null>(null)
 
-    const { data: session } = authClient.useSession()
+  const { data: session } = authClient.useSession()
+
+  const getCredits = async () => {
+    try {
+      const { data } = await api.get('/api/user/credits')
+      setCredits(data.credits ?? 0)
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message)
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    if (session?.user) {
+      getCredits()
+    }
+  }, [session?.user])
 
   return (
     <>
     <nav className="z-50 flex items-center justify-between w-full py-4 px-4 md:px-16 lg:px-24 xl:px-32 backdrop-blur border-b text-white border-slate-800">
         <Link to='/'>
-              <img src={assets.logo} alt="logo" className='h-5 sm:h-1' />
-          </Link>
+          <img src={assets.logo} alt="logo" className='h-5 sm:h-10' />
+        </Link>
 
           <div className="hidden md:flex items-center gap-8 transition duration-500">
             <Link to='/'>Home</Link>
@@ -27,13 +44,18 @@ const NavBar = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            
+
             {!session?.user ? (
               <button onClick={() => navigate('/auth/signin')} className="px-6 py-1.5 max-sm:text-sm bg-indigo-600 active:scale-95 hover:bg-indigo-700 transition rounded">
               Get started
             </button>
             ) : (
+              <>
+              <button className='bg-white/10 px-5 py-1.5 text-xs sm:text-sm border text-gray-200 rounded-full'>
+                {credits !== null ? `${credits} Credits` : '...'}
+              </button>
               <UserButton size='icon' />
+              </>
             )
 
             }
@@ -59,7 +81,11 @@ const NavBar = () => {
         )}
 
         {/* BACKGROUND IMAGE */}
-          <img src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/refs/heads/main/assets/hero/bg-gradient-2.png" className="absolute inset-0 -z-10 size-full opacity" alt="" />
+        <img
+          src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/refs/heads/main/assets/hero/bg-gradient-2.png"
+          className="absolute inset-0 -z-10 size-full opacity-60"
+          alt=""
+        />
 
     </>
   )

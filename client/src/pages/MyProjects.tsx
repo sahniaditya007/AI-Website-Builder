@@ -2,28 +2,49 @@ import { useEffect, useState } from 'react'
 import { Loader2Icon, PlusIcon, TrashIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { Project } from '../types'
-import { dummyProjects } from '../assets/assets'
+import api from '@/config/axios'
+import { toast } from 'sonner'
+import { authClient } from '@/lib/auth-client'
 
 const MyProjects = () => {
   const [loading, setLoading] = useState(true)
   const [projects, setProjects] = useState<Project[]>([])
   const navigate = useNavigate()
+  const { data: session, isPending } = authClient.useSession()
 
   const fetchProjects = async () => {
-    setProjects(dummyProjects)
-    //Simulate Loading
-    setTimeout(() => {
+    try {
+      const { data } = await api.get('/api/user/projects')
+      const project = data.project
+      setProjects(project ? [project] as Project[] : [])
       setLoading(false)
-    }, 1000);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message)
+      console.log(error)
+      setLoading(false)
+    }
   }
 
   const deleteProject = async (projectId: string) => {
-    
+    try {
+      await api.delete(`/api/project/${projectId}`)
+      setProjects(prev => prev.filter(p => p.id !== projectId))
+      toast.success('Project deleted')
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message)
+      console.log(error)
+    }
   }
 
   useEffect(() => {
-    fetchProjects()
-  }, [])
+    if (session?.user) {
+      fetchProjects()
+    } else if (!isPending && !session?.user) {
+      navigate('/')
+      toast('Please login to view your projects')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user, isPending])
 
   return (
     <div className="px-4 md:px-16 lg:px-24 xl:px-32">

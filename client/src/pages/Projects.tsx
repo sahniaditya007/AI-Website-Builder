@@ -1,65 +1,100 @@
-import { useNavigate, useParams, useLocation } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import type { Project } from "../types"
 import { useEffect, useState } from "react"
 import { Loader2Icon, Monitor, Smartphone, Tablet, Save, ExternalLink, MoreVertical } from "lucide-react"
-import { dummyConversations, dummyProjects } from "../assets/assets"
+import api from "@/config/axios"
+import { toast } from "sonner"
+import { authClient } from "@/lib/auth-client"
 
 const Projects = () => {
   const { projectId } = useParams()
-  const location = useLocation()
   const navigate = useNavigate()
+  const { data: session, isPending } = authClient.useSession()
 
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [device, setDevice] = useState<'phone' | 'tablet' | 'desktop'>("desktop")
+  const [device, setDevice] = useState<"phone" | "tablet" | "desktop">("desktop")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [chatInput, setChatInput] = useState("")
 
   const fetchProject = async () => {
-    if (projectId === 'new') {
-      const prompt = (location.state as { prompt?: string })?.prompt || 'My website'
-      setProject({
-        id: 'new',
-        name: prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''),
-        initial_prompt: prompt,
-        current_code: '',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        userId: '',
-        conversation: [],
-        versions: [],
-        current_version_index: '',
-      })
+    if (!projectId) return
+    try {
+      const { data } = await api.get(`/api/user/project/${projectId}`)
+      setProject(data.project)
+      setIsGenerating(data.project?.current_code ? false : true)
       setLoading(false)
-      setIsGenerating(true)
-      return
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message)
+      console.log(error)
     }
-    const found = dummyProjects.find(p => p.id === projectId)
-    setTimeout(() => {
-      if (found) {
-        setProject({ ...found, conversation: dummyConversations })
-        setIsGenerating(!found.current_code)
-      }
-      setLoading(false)
-    }, 1500)
+  }
+
+  const handleTogglePublish = async () => {
+    if (!projectId) return
+    try {
+      const { data } = await api.get(`/api/user/publish-toggle/${projectId}`)
+      toast.success(data.message)
+      // Refetch project to update isPublished flag
+      await fetchProject()
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message)
+      console.log(error)
+    }
   }
 
   useEffect(() => {
-    fetchProject()
-  }, [projectId])
+    if (session?.user) {
+      fetchProject()
+    } else if (!isPending && !session?.user) {
+      navigate("/")
+      toast("Please login to view your projects")
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user, isPending])
 
-  const handleSave = () => {
-    setIsSaving(true)
-    setTimeout(() => setIsSaving(false), 1000)
+  useEffect(() => {
+    if (project && !project.current_code) {
+      const intervalId = setInterval(fetchProject, 10000)
+      return () => clearInterval(intervalId)
+    }
+  }, [project])
+
+  const handleSave = async () => {
+    if (!projectId || !project?.current_code) return
+    try {
+      setIsSaving(true)
+      await api.put(`/api/project/save/${projectId}`, {
+        code: project.current_code,
+      })
+      toast.success("Project saved")
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message)
+      console.log(error)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!chatInput.trim() || !project) return
-    // Placeholder: backend will handle AI response
-    setChatInput("")
+    if (!chatInput.trim() || !projectId) return
+
+    try {
+      setIsGenerating(true)
+      const message = chatInput.trim()
+      setChatInput("")
+      await api.post(`/api/project/revision/${projectId}`, { message })
+      toast.success("Revision requested. Updating preview...")
+      await fetchProject()
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message)
+      console.log(error)
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   if (loading) {
@@ -84,7 +119,7 @@ const Projects = () => {
     )
   }
 
-  const deviceWidth = device === 'phone' ? 'max-w-[375px]' : device === 'tablet' ? 'max-w-[768px]' : 'max-w-full'
+  const deviceWidth = device === "phone" ? "max-w-[375px]" : device === "tablet" ? "max-w-[768px]" : "max-w-full"
 
   return (
     <div className="flex flex-col h-screen w-full bg-gray-900 text-white">
@@ -144,12 +179,24 @@ const Projects = () => {
             <ExternalLink size={16} />
             Preview
           </a>
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded-md hover:bg-gray-700"
-          >
-            <MoreVertical size={18} />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-md hover:bg-gray-700"
+            >
+              <MoreVertical size={18} />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 mt-2 w-40 bg-gray-800 border border-gray-700 rounded-md shadow-lg z-10">
+                <button
+                  onClick={handleTogglePublish}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-700"
+                >
+                  {project.isPublished ? "Unpublish" : "Publish"}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

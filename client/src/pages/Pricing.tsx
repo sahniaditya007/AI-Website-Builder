@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { appPlans } from "../assets/assets";
+import api from "@/config/axios";
+import { toast } from "sonner";
 
 interface Plan {
   id: string;
@@ -14,8 +16,23 @@ const Pricing = () => {
   const [plans] = useState<Plan[]>(appPlans);
 
   const handlePurchase = async (planId: string) => {
-    // placeholder to avoid empty async function
-    console.log("Purchasing plan:", planId);
+    try {
+      const plan = plans.find((p) => p.id === planId);
+      if (!plan) return;
+
+      const amount = parseFloat(plan.price.replace("$", "")) || 0;
+
+      await api.post("/api/user/purchase-credits", {
+        planId: plan.id,
+        credits: plan.credits,
+        amount,
+      });
+
+      toast.success(`Added ${plan.credits} credits to your account.`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message);
+      console.log(error);
+    }
   };
 
   return (
